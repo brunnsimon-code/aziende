@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NWG Business Calc</title>
+    <style>
+        :root { --emerald: #2c3e50; --accent: #3498db; --red: #e74c3c; --bg: #f4f7f6; }
+        body { font-family: sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 10px; margin: 0; }
+        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h1 { color: var(--emerald); text-align: center; font-size: 18px; margin: 0; text-transform: uppercase; }
+        .subtitle { text-align: center; color: var(--accent); font-size: 12px; font-weight: bold; margin-bottom: 15px; }
+        .section { background: var(--emerald); color: white; padding: 10px; border-radius: 10px; text-align: center; font-weight: bold; margin: 15px 0 10px; font-size: 12px; text-transform: uppercase; }
+        .section.old { background: var(--red); }
+        label { display: block; font-size: 11px; font-weight: bold; margin: 10px 0 5px; color: #444; }
+        input, select { width: 100%; padding: 12px; border: 2px solid #e0e6ed; border-radius: 10px; box-sizing: border-box; font-size: 15px; margin-bottom: 5px; }
+        .btn-group { display: flex; gap: 5px; margin-bottom: 10px; }
+        .btn { flex: 1; padding: 12px; border: 2px solid #e0e6ed; background: white; border-radius: 10px; cursor: pointer; font-size: 10px; font-weight: bold; color: #666; outline: none; }
+        .btn.active { background: var(--accent) !important; color: white !important; border-color: var(--accent) !important; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
+        .calc-btn { width: 100%; padding: 18px; background: var(--emerald); color: white; border: none; border-radius: 15px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .results { display: flex; gap: 8px; margin-top: 15px; }
+        .res-box { flex: 1; padding: 12px; border-radius: 15px; border: 2px solid #e0e6ed; text-align: center; }
+        .res-box.highlight { border-color: var(--accent); background: #ebf5fb; }
+        .res-label { font-size: 8px; font-weight: bold; color: #888; display: block; }
+        .res-val { font-size: 16px; font-weight: 800; color: var(--emerald); }
+        .sub-label { font-size: 9px; color: #666; margin: 8px 0 3px; display: block; text-align: center; background: #eee; border-radius: 5px; padding: 4px; font-weight: bold; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>Analisi Convenienza</h1>
+    <div class="subtitle">Profilo Business / Aziende</div>
+    <div class="section">Configurazione</div>
+    <label>Frequenza</label>
+    <div class="btn-group">
+        <button id="f-m" class="btn active" onclick="setF(true)">MENSILE</button>
+        <button id="f-b" class="btn" onclick="setF(false)">BIMESTRALE</button>
+    </div>
+    <label>Tariffa</label>
+    <div class="btn-group">
+        <button id="t-mono" class="btn active" onclick="setT(true)">MONORARIA</button>
+        <button id="t-multi" class="btn" onclick="setT(false)">MULTIORARIA</button>
+    </div>
+    <label>Mese di Riferimento</label>
+    <div style="display:flex; gap:5px;">
+        <select id="m1"><option value="0">Gennaio '26</option><option value="1">Febbraio '26</option><option value="2">Marzo '26</option></select>
+        <select id="m2" style="display:none;"><option value="1">Febbraio '26</option><option value="0">Gennaio '26</option></select>
+    </div>
+    <div class="section">Dati Consumo</div>
+    <div id="area-mono">
+        <span class="sub-label">kWh I° Mese</span>
+        <input type="number" id="k1" placeholder="Totale">
+        <div id="extra-k2" style="display:none;"><span class="sub-label">kWh II° Mese</span><input type="number" id="k2" placeholder="Totale"></div>
+    </div>
+    <div id="area-multi" style="display:none;">
+        <span class="sub-label">Fasce I° Mese</span>
+        <div class="grid-3"><input type="number" id="f1-1" placeholder="F1"><input type="number" id="f2-1" placeholder="F2"><input type="number" id="f3-1" placeholder="F3"></div>
+        <div id="extra-f2" style="display:none;"><span class="sub-label">Fasce II° Mese</span><div class="grid-3"><input type="number" id="f1-2" placeholder="F1"><input type="number" id="f2-2" placeholder="F2"><input type="number" id="f3-2" placeholder="F3"></div></div>
+    </div>
+    <div class="section">Sconti & Promo</div>
+    <div class="btn-group">
+        <button id="p-start" class="btn active" onclick="setP(true)">PRIMI 3 MESI</button>
+        <button id="p-std" class="btn" onclick="setP(false)">DAL 4° MESE</button>
+    </div>
+    <label>Amici Invitati</label>
+    <input type="number" id="amici" value="0">
+    <div class="section old">Confronto Attuale</div>
+    <div style="display: flex; gap:5px;">
+        <div style="flex:1;"><input type="number" id="old-c" placeholder="Energia (€)"></div>
+        <div style="flex:1;"><input type="number" id="old-f" placeholder="Fissi (€)"></div>
+    </div>
+    <button type="button" class="calc-btn" onclick="calcola()">ESEGUI CONFRONTO</button>
+    <div class="results">
+        <div class="res-box"><span class="res-label">ATTUALE</span><span class="res-val" id="res-old">€ 0.00</span></div>
+        <div class="res-box highlight"><span class="res-label">STIMA NWG</span><span class="res-val" id="res-new">€ 0.00</span></div>
+    </div>
+</div>
+<script>
+    var conf = { mensile: true, mono: true, promo: true };
+    var pun = [{m:0.13266,f1:0.1452,f2:0.1385,f3:0.118},{m:0.11441,f1:0.126,f2:0.119,f3:0.102},{m:0.1434,f1:0.158,f2:0.149,f3:0.128}];
+    function setF(v){conf.mensile=v;document.getElementById('f-m').className=v?'btn active':'btn';document.getElementById('f-b').className=v?'btn':'btn active';document.getElementById('m2').style.display=v?'none':'block';document.getElementById('extra-k2').style.display=(!v&&conf.mono)?'block':'none';document.getElementById('extra-f2').style.display=(!v&&!conf.mono)?'block':'none';}
+    function setT(v){conf.mono=v;document.getElementById('t-mono').className=v?'btn active':'btn';document.getElementById('t-multi').className=v?'btn':'btn active';document.getElementById('area-mono').style.display=v?'block':'none';document.getElementById('area-multi').style.display=v?'none':'block';document.getElementById('extra-k2').style.display=(!conf.mensile&&v)?'block':'none';document.getElementById('extra-f2').style.display=(!conf.mensile&&!v)?'block':'none';}
+    function setP(v){conf.promo=v;document.getElementById('p-start').className=v?'btn active':'btn';document.getElementById('p-std').className=v?'btn':'btn active';}
+    function calcola(){
+        var sbil=0.02167,disp=0.01155,cap=0.003981,ccv=11.50;
+        function getM(idx,s){
+            var q=(pun[idx].m*1.23)-0.0397,e=0;
+            if(conf.mono){var k=parseFloat(document.getElementById('k'+s).value)||0;e=k*(q+0.0759+sbil+disp+cap);
+            }else{var f1=parseFloat(document.getElementById('f1-'+s).value)||0,f2=parseFloat(document.getElementById('f2-'+s).value)||0,f3=parseFloat(document.getElementById('f3-'+s).value)||0;e=((f1+f2+f3)*(q+sbil+disp+cap))+(f1*0.0803)+(f2*0.0759)+(f3*0.0627);}
+            return e+ccv;
+        }
+        var tot=getM(parseInt(document.getElementById('m1').value),"1");
+        if(!conf.mensile)tot=(tot+getM(parseInt(document.getElementById('m2').value),"2"))/2;
+        var nA=parseInt(document.getElementById('amici').value)||0;
+        if(conf.promo){tot=tot-10-(nA*10);}else{tot=tot-(nA*2);}
+        var vOld=(parseFloat(document.getElementById('old-c').value)||0)+(parseFloat(document.getElementById('old-f').value)||0);
+        if(!conf.mensile)vOld/=2;
+        document.getElementById('res-new').innerText="€ "+Math.max(0,tot).toFixed(2);
+        document.getElementById('res-old').innerText="€ "+vOld.toFixed(2);
+    }
+</script>
+</body>
+</html>
