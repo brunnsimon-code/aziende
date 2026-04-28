@@ -42,10 +42,20 @@
         <button id="t-mono" class="btn active" onclick="setT(true)">MONORARIA</button>
         <button id="t-multi" class="btn" onclick="setT(false)">MULTIORARIA</button>
     </div>
-    <label>Mese di Riferimento</label>
+    <label>Mesi di Riferimento</label>
     <div style="display:flex; gap:5px;">
-        <select id="m1"><option value="0">Gennaio '26</option><option value="1">Febbraio '26</option><option value="2">Marzo '26</option></select>
-        <select id="m2" style="display:none;"><option value="1">Febbraio '26</option><option value="0">Gennaio '26</option></select>
+        <select id="m1">
+            <option value="0">Gennaio '26</option>
+            <option value="1">Febbraio '26</option>
+            <option value="2">Marzo '26</option>
+            <option value="2">Aprile '26</option>
+        </select>
+        <select id="m2" style="display:none;">
+            <option value="0">Gennaio '26</option>
+            <option value="1" selected>Febbraio '26</option>
+            <option value="2">Marzo '26</option>
+            <option value="2">Aprile '26</option>
+        </select>
     </div>
     <div class="section">Dati Consumo</div>
     <div id="area-mono">
@@ -77,28 +87,58 @@
     </div>
 </div>
 <script>
-    var conf = { mensile: true, mono: true, promo: true };
-    var pun = [{m:0.13266,f1:0.1452,f2:0.1385,f3:0.118},{m:0.11441,f1:0.126,f2:0.119,f3:0.102},{m:0.1434,f1:0.158,f2:0.149,f3:0.128}];
-    function setF(v){conf.mensile=v;document.getElementById('f-m').className=v?'btn active':'btn';document.getElementById('f-b').className=v?'btn':'btn active';document.getElementById('m2').style.display=v?'none':'block';document.getElementById('extra-k2').style.display=(!v&&conf.mono)?'block':'none';document.getElementById('extra-f2').style.display=(!v&&!conf.mono)?'block':'none';}
-    function setT(v){conf.mono=v;document.getElementById('t-mono').className=v?'btn active':'btn';document.getElementById('t-multi').className=v?'btn':'btn active';document.getElementById('area-mono').style.display=v?'block':'none';document.getElementById('area-multi').style.display=v?'none':'block';document.getElementById('extra-k2').style.display=(!conf.mensile&&v)?'block':'none';document.getElementById('extra-f2').style.display=(!conf.mensile&&!v)?'block':'none';}
-    function setP(v){conf.promo=v;document.getElementById('p-start').className=v?'btn active':'btn';document.getElementById('p-std').className=v?'btn':'btn active';}
-    function calcola(){
-        var sbil=0.02167,disp=0.01155,cap=0.003981,ccv=11.50;
-        function getM(idx,s){
-            var q=(pun[idx].m*1.23)-0.0397,e=0;
-            if(conf.mono){var k=parseFloat(document.getElementById('k'+s).value)||0;e=k*(q+0.0759+sbil+disp+cap);
-            }else{var f1=parseFloat(document.getElementById('f1-'+s).value)||0,f2=parseFloat(document.getElementById('f2-'+s).value)||0,f3=parseFloat(document.getElementById('f3-'+s).value)||0;e=((f1+f2+f3)*(q+sbil+disp+cap))+(f1*0.0803)+(f2*0.0759)+(f3*0.0627);}
-            return e+ccv;
+    window.conf = { mensile: true, mono: true, promo: true };
+    window.pun = [{m:0.13266,f1:0.1452,f2:0.1385,f3:0.118},{m:0.11441,f1:0.126,f2:0.119,f3:0.102},{m:0.1434,f1:0.158,f2:0.149,f3:0.128}];
+
+    window.setF = function(v) {
+        window.conf.mensile = v;
+        document.getElementById('f-m').className = v ? 'btn active' : 'btn';
+        document.getElementById('f-b').className = v ? 'btn' : 'btn active';
+        document.getElementById('m2').style.display = v ? 'none' : 'block';
+        document.getElementById('extra-k2').style.display = (!v && window.conf.mono) ? 'block' : 'none';
+        document.getElementById('extra-f2').style.display = (!v && !window.conf.mono) ? 'block' : 'none';
+    };
+
+    window.setT = function(v) {
+        window.conf.mono = v;
+        document.getElementById('t-mono').className = v ? 'btn active' : 'btn';
+        document.getElementById('t-multi').className = v ? 'btn' : 'btn active';
+        document.getElementById('area-mono').style.display = v ? 'block' : 'none';
+        document.getElementById('area-multi').style.display = v ? 'none' : 'block';
+        document.getElementById('extra-k2').style.display = (!window.conf.mensile && v) ? 'block' : 'none';
+        document.getElementById('extra-f2').style.display = (!window.conf.mensile && !v) ? 'block' : 'none';
+    };
+
+    window.setP = function(v) {
+        window.conf.promo = v;
+        document.getElementById('p-start').className = v ? 'btn active' : 'btn';
+        document.getElementById('p-std').className = v ? 'btn' : 'btn active';
+    };
+
+    window.calcola = function() {
+        var sbil=0.02167, disp=0.01155, cap=0.003981, ccv=11.50;
+        function getM(idx, s) {
+            var q = (window.pun[idx].m * 1.23) - 0.0397, e = 0;
+            if (window.conf.mono) {
+                var k = parseFloat(document.getElementById('k' + s).value) || 0;
+                e = k * (q + 0.0759 + sbil + disp + cap);
+            } else {
+                var f1 = parseFloat(document.getElementById('f1-' + s).value) || 0,
+                    f2 = parseFloat(document.getElementById('f2-' + s).value) || 0,
+                    f3 = parseFloat(document.getElementById('f3-' + s).value) || 0;
+                e = ((f1 + f2 + f3) * (q + sbil + disp + cap)) + (f1 * 0.0803) + (f2 * 0.0759) + (f3 * 0.0627);
+            }
+            return e + ccv;
         }
-        var tot=getM(parseInt(document.getElementById('m1').value),"1");
-        if(!conf.mensile)tot=(tot+getM(parseInt(document.getElementById('m2').value),"2"))/2;
-        var nA=parseInt(document.getElementById('amici').value)||0;
-        if(conf.promo){tot=tot-10-(nA*10);}else{tot=tot-(nA*2);}
-        var vOld=(parseFloat(document.getElementById('old-c').value)||0)+(parseFloat(document.getElementById('old-f').value)||0);
-        if(!conf.mensile)vOld/=2;
-        document.getElementById('res-new').innerText="€ "+Math.max(0,tot).toFixed(2);
-        document.getElementById('res-old').innerText="€ "+vOld.toFixed(2);
-    }
+        var tot = getM(parseInt(document.getElementById('m1').value), "1");
+        if (!window.conf.mensile) tot = (tot + getM(parseInt(document.getElementById('m2').value), "2")) / 2;
+        var nA = parseInt(document.getElementById('amici').value) || 0;
+        if (window.conf.promo) { tot = tot - 10 - (nA * 10); } else { tot = tot - (nA * 2); }
+        var vOld = (parseFloat(document.getElementById('old-c').value) || 0) + (parseFloat(document.getElementById('old-f').value) || 0);
+        if (!window.conf.mensile) vOld /= 2;
+        document.getElementById('res-new').innerText = "€ " + Math.max(0, tot).toFixed(2);
+        document.getElementById('res-old').innerText = "€ " + vOld.toFixed(2);
+    };
 </script>
 </body>
 </html>
